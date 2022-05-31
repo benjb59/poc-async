@@ -17,12 +17,12 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping(path = "/create")
-    public String createUser(@RequestParam(required = false) String username) {
-        return userService.createUser(username);
+    public void createUser(@RequestParam String username) {
+        userService.createUser(username);
     }
 
     @GetMapping(path = "/all")
     public String getUsers() {
-        return userService.queryUser().map(userEntity -> userEntity.getUsername()).collect(Collectors.joining(" : "));
+        return userService.queryUser().map(userEntity -> userEntity.getUsername() + "->" + userEntity.isRegistered()).collect(Collectors.joining(" | "));
     }
 }

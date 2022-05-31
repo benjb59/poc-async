@@ -1,11 +1,11 @@
 package fr.insee.pocasync.producer.service;
 
-import fr.insee.pocasync.producer.domain.UserEntity;
+import fr.insee.pocasync.producer.domain.UserDTO;
 
 import java.util.stream.Stream;
 
 public interface UserService {
-    String createUser(String username);
+    void createUser(String username);
 
-    Stream<UserEntity> queryUser();
+    Stream<UserDTO> queryUser();
 }

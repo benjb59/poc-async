@@ -1,6 +1,8 @@
 package fr.insee.pocasync.producer.broker.out;
 
 import fr.insee.pocasync.ConfigurationAMQP;
+import fr.insee.pocasync.producer.domain.UserDTO;
+import fr.insee.pocasync.producer.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
@@ -14,8 +16,8 @@ import javax.transaction.Transactional;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
-@ConditionalOnProperty(prefix = "notification", name = "service", havingValue = "amqp")
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "notification", name = "service", havingValue = "amqp")
 @Component
 public class RequestToConsumerAMQP {
 
@@ -23,11 +25,13 @@ public class RequestToConsumerAMQP {
 
     private final AsyncRabbitTemplate asyncRabbitTemplate;
 
+    private final UserRepository userRepository;
+
     @Value("${notification.service.mode}")
     private String mode;
 
     @Transactional
-    public String publish(String username) {
+    public void publish(UserDTO user) {
 
         log.info("##################################");
         log.info("RABBITMQ - PRODUCER : send message");
@@ -39,27 +43,33 @@ public class RequestToConsumerAMQP {
             String response = (String) rabbitTemplate.convertSendAndReceive(
                     ConfigurationAMQP.EXCHANGE_NAME,
                     ConfigurationAMQP.ROUTING_KEY,
-                    username);
+                    user);
 
-            return response;
+            if (response != null) {
+                user.setRegistered(true);
+                userRepository.save(user);
+            }
 
         } else {
+            asyncRabbitTemplate.setReceiveTimeout(60000);
+
             ListenableFuture<String> listenableFuture =
                     asyncRabbitTemplate.convertSendAndReceive(
                             ConfigurationAMQP.EXCHANGE_NAME,
                             ConfigurationAMQP.ROUTING_KEY,
-                            username);
+                            user);
             // non blocking part
             log.info("Non blocking block");
 
             try {
                 String response = listenableFuture.get();
                 log.info("Message received: {}", response);
-                return response;
+                user.setRegistered(true);
+                userRepository.save(user);
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Cannot get response.", e);
             }
-        };
-        return null;
+        }
+        ;
     }
 }

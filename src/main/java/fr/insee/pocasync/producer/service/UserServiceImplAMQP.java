@@ -1,8 +1,7 @@
 package fr.insee.pocasync.producer.service;
 
-import fr.insee.pocasync.producer.broker.in.ResponseFromConsumerJMS;
 import fr.insee.pocasync.producer.broker.out.RequestToConsumerAMQP;
-import fr.insee.pocasync.producer.domain.UserEntity;
+import fr.insee.pocasync.producer.domain.UserDTO;
 import fr.insee.pocasync.producer.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,22 +11,30 @@ import org.springframework.stereotype.Service;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-@Service
 @Slf4j
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "notification", name = "service", havingValue = "amqp")
+@Service
 public class UserServiceImplAMQP implements UserService {
 
     private final UserRepository userRepository;
     private final RequestToConsumerAMQP userProducer;
 
     @Override
-    public String createUser(String username) {
-        return userProducer.publish(username);
+    public void createUser(String username) {
+
+        UserDTO user = UserDTO
+                .builder()
+                .username(username)
+                .build();
+
+        userRepository.save(user);
+
+        userProducer.publish(user);
     }
 
     @Override
-    public Stream<UserEntity> queryUser() {
+    public Stream<UserDTO> queryUser() {
         return StreamSupport.stream(userRepository.findAll().spliterator(), false);
     }
 }
