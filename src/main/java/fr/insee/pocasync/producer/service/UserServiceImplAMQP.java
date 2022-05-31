@@ -23,14 +23,14 @@ public class UserServiceImplAMQP implements UserService {
     @Override
     public void createUser(String username) {
 
-        UserDTO user = UserDTO
+        UserDTO userDTO = UserDTO
                 .builder()
                 .username(username)
                 .build();
 
-        userRepository.save(user);
+        userRepository.save(userDTO);
 
-        userProducer.publish(user);
+        userProducer.publish(userDTO);
     }
 
     @Override

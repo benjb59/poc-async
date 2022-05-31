@@ -31,7 +31,7 @@ public class RequestToConsumerAMQP {
     private String mode;
 
     @Transactional
-    public void publish(UserDTO user) {
+    public void publish(UserDTO userDTO) {
 
         log.info("##################################");
         log.info("RABBITMQ - PRODUCER : send message");
@@ -43,11 +43,11 @@ public class RequestToConsumerAMQP {
             String response = (String) rabbitTemplate.convertSendAndReceive(
                     ConfigurationAMQP.EXCHANGE_NAME,
                     ConfigurationAMQP.ROUTING_KEY,
-                    user);
+                    userDTO);
 
             if (response != null) {
-                user.setRegistered(true);
-                userRepository.save(user);
+                userDTO.setRegistered(true);
+                userRepository.save(userDTO);
             }
 
         } else {
@@ -57,15 +57,15 @@ public class RequestToConsumerAMQP {
                     asyncRabbitTemplate.convertSendAndReceive(
                             ConfigurationAMQP.EXCHANGE_NAME,
                             ConfigurationAMQP.ROUTING_KEY,
-                            user);
+                            userDTO);
             // non blocking part
             log.info("Non blocking block");
 
             try {
                 String response = listenableFuture.get();
                 log.info("Message received: {}", response);
-                user.setRegistered(true);
-                userRepository.save(user);
+                userDTO.setRegistered(true);
+                userRepository.save(userDTO);
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Cannot get response.", e);
             }

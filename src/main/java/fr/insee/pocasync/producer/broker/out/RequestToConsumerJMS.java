@@ -19,14 +19,14 @@ public class RequestToConsumerJMS {
     private final JmsTemplate jmsTemplate;
 
     @Transactional
-    public void publish(UserDTO user) {
+    public void publish(UserDTO userDTO) {
 
         log.info("##################################");
-        log.info("ACTIVEMQ - PRODUCER : send message with correlation_id: <" + user.getCorrelationId() + ">");
+        log.info("ACTIVEMQ - PRODUCER : send message with correlation_id: <" + userDTO.getCorrelationId() + ">");
         log.info("##################################");
 
-        jmsTemplate.convertAndSend(ConfigurationJMS.MESSAGE_QUEUE_REQUEST, "JMS received User : " + user.getUsername(), m -> {
-            m.setJMSCorrelationID(user.getCorrelationId().toString());
+        jmsTemplate.convertAndSend(ConfigurationJMS.MESSAGE_QUEUE_REQUEST, "JMS received User : " + userDTO.getUsername(), m -> {
+            m.setJMSCorrelationID(userDTO.getCorrelationId().toString());
             return m;
         });
     }

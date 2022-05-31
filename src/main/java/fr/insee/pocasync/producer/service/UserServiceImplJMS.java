@@ -31,15 +31,15 @@ public class UserServiceImplJMS implements UserService {
 
         UUID correlationId = UUID.randomUUID();
 
-        UserDTO user = UserDTO
+        UserDTO userDTO = UserDTO
                 .builder()
                 .username(username)
                 .correlationId(correlationId)
                 .build();
 
-        userRepository.save(user);
+        userRepository.save(userDTO);
 
-        userProducer.publish(user);
+        userProducer.publish(userDTO);
 
         responseReceiverFromConsumer.receiveResponse(MESSAGE_QUEUE_RESPONSE, correlationId.toString());
     }

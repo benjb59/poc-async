@@ -1,6 +1,7 @@
 package fr.insee.pocasync.consumer.broker.in;
 
 import fr.insee.pocasync.ConfigurationAMQP;
+import fr.insee.pocasync.producer.domain.UserDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,7 @@ public class ConsumeFromProducerAMQP {
 
     @SneakyThrows
     @RabbitListener(queues = ConfigurationAMQP.MESSAGE_QUEUE_REQUEST)
-    public String receiveMessage(String name) {
+    public String receiveMessage(UserDTO userDTO) {
 
         log.info("######################################");
         log.info("RABBITMQ - CONSUMER : received message");
@@ -26,6 +27,6 @@ public class ConsumeFromProducerAMQP {
 
         TimeUnit.SECONDS.sleep(10);
 
-        return "Hello world, " + name;
+        return "Hello world, " + userDTO.getUsername();
     }
 }
