@@ -1,11 +1,13 @@
 package fr.insee.pocasync.producer.controller;
 
-import java.util.stream.Collectors;
-import javax.transaction.Transactional;
-
 import fr.insee.pocasync.producer.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("users")
@@ -15,12 +17,12 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping(path = "/create")
-    public String createUser(@RequestParam( required=false ) String username){
+    public String createUser(@RequestParam(required = false) String username) {
         return userService.createUser(username);
     }
 
     @GetMapping(path = "/all")
-    public String getUsers(){
+    public String getUsers() {
         return userService.queryUser().map(userEntity -> userEntity.getUsername()).collect(Collectors.joining(" : "));
     }
 }
