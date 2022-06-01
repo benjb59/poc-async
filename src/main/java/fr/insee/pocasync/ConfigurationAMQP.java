@@ -1,14 +1,12 @@
 package fr.insee.pocasync;
 
 
-import fr.insee.pocasync.consumer.broker.in.ConsumeFromProducerAMQP;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
-import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
+import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +15,9 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(prefix = "notification", name = "service", havingValue = "amqp")
 public class ConfigurationAMQP {
 
+    public static final String EXCHANGE_NAME = "spring-boot-exchange";
     public static final String MESSAGE_QUEUE_REQUEST = "message-queue-request";
+    public static final String ROUTING_KEY = "foo.bar.#";
 
     @Bean
     Queue queue() {
@@ -25,18 +25,17 @@ public class ConfigurationAMQP {
     }
 
     @Bean
-    MessageListenerAdapter listenerAdapter(ConsumeFromProducerAMQP receiver) {
-        return new MessageListenerAdapter(receiver, "receiveMessage");
+    DirectExchange exchange() {
+        return new DirectExchange(EXCHANGE_NAME);
     }
 
     @Bean
-    SimpleMessageListenerContainer container(ConnectionFactory connectionFactory,
-                                             MessageListenerAdapter listenerAdapter) {
-        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        container.setQueueNames(MESSAGE_QUEUE_REQUEST);
-        container.setMessageListener(listenerAdapter);
-        return container;
+    Binding binding(Queue queue, DirectExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
     }
 
+    @Bean
+    public AsyncRabbitTemplate asyncRabbitTemplate(RabbitTemplate rabbitTemplate) {
+        return new AsyncRabbitTemplate(rabbitTemplate);
+    }
 }

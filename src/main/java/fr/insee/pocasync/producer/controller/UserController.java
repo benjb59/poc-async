@@ -1,6 +1,6 @@
 package fr.insee.pocasync.producer.controller;
 
-import fr.insee.pocasync.producer.domain.UserEntity;
+import fr.insee.pocasync.producer.domain.UserDTO;
 import fr.insee.pocasync.producer.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,12 +18,12 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping(path = "/create")
-    public Mono<String> createUser(@RequestParam(required = false) String username) {
+    public Mono<String> createUser(@RequestParam String username) {
         return userService.createUser(username);
     }
 
     @GetMapping(path = "/all")
     public Flux<String> getUsers() {
-        return userService.queryUser().map(UserEntity::getUsername);
+        return userService.queryUser().map(UserDTO::toPrintableString);
     }
 }

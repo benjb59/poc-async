@@ -12,12 +12,20 @@ import java.util.UUID;
 @Data
 @Getter
 @Setter
-@NoArgsConstructor
 @ToString
 @EqualsAndHashCode
-public class UserEntity {
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UserDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID userId;
+    private UUID correlationId;
     private String username;
+    private boolean registered;
+
+    public String toPrintableString(){
+        return getUsername() + "->" + isRegistered();
+    }
 }
