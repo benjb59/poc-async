@@ -43,7 +43,8 @@ public class RequestToConsumerAMQP {
             String response = (String) rabbitTemplate.convertSendAndReceive(
                     ConfigurationAMQP.EXCHANGE_NAME,
                     ConfigurationAMQP.ROUTING_KEY,
-                    userDTO);
+                    userDTO
+            );
 
             if (response != null) {
                 userDTO.setRegistered(true);
