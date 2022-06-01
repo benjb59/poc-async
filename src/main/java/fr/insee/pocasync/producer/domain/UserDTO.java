@@ -9,19 +9,21 @@ import javax.persistence.Id;
 import java.util.UUID;
 
 @Entity
-@Data
 @Getter
 @Setter
 @ToString
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
+@RequiredArgsConstructor
 @Builder
 public class UserDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID userId;
+    private UUID userId=null;
+    @NonNull
     private UUID correlationId;
+    @NonNull
     private String username;
     private boolean registered;
 

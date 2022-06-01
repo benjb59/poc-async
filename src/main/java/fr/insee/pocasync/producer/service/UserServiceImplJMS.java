@@ -31,15 +31,9 @@ public class UserServiceImplJMS implements UserService {
     @Override
     public Mono<String> createUser(String username) {
         return Mono.fromCallable(() ->{
-            var correlationId =UUID.randomUUID();
-            var userDTO = UserDTO
-                    .builder()
-                    .username(username)
-                    .correlationId(correlationId)
-                    .build();
-            userRepository.save(userDTO);
+            var userDTO = userRepository.save(new UserDTO(UUID.randomUUID(), username));
             userProducer.publish(userDTO);
-            responseReceiverFromConsumer.receiveResponse(MESSAGE_QUEUE_RESPONSE, correlationId.toString());
+            responseReceiverFromConsumer.receiveResponse(MESSAGE_QUEUE_RESPONSE, userDTO.getCorrelationId().toString());
             return (String)null;
         }).subscribeOn(Schedulers.boundedElastic());
     }

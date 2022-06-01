@@ -3,6 +3,7 @@ package fr.insee.pocasync.producer.broker.out;
 import fr.insee.pocasync.ConfigurationAMQP;
 import fr.insee.pocasync.producer.domain.UserDTO;
 import fr.insee.pocasync.producer.repository.UserRepository;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
@@ -31,7 +32,7 @@ public class RequestToConsumerAMQP {
     private String mode;
 
     @Transactional
-    public void publish(UserDTO userDTO) {
+    public void publish(@NonNull UserDTO userDTO) {
 
         log.info("##################################");
         log.info("RABBITMQ - PRODUCER : send message");
