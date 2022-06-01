@@ -8,8 +8,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -26,20 +31,19 @@ public class UserServiceImplJMS implements UserService {
     private final ResponseFromConsumerJMS responseReceiverFromConsumer;
 
     @Override
-    public String createUser(String username) {
-
-        String correlationId = UUID.randomUUID().toString();
-        userProducer.publish(username, correlationId);
-        responseReceiverFromConsumer.receiveResponse(MESSAGE_QUEUE_RESPONSE, correlationId);
-
-        /*UserEntity userEntity = new UserEntity();
-        userEntity.setUsername(username);
-        return userRepository.save(userEntity).getUserId().toString();*/
-        return null;
+    public Mono<String> createUser(String username) {
+        return Mono.fromCallable(() ->{
+            String correlationId =UUID.randomUUID().toString();
+            userProducer.publish(username, correlationId);
+            responseReceiverFromConsumer.receiveResponse(MESSAGE_QUEUE_RESPONSE, correlationId);
+            return (String)null;
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     @Override
-    public Stream<UserEntity> queryUser() {
-        return StreamSupport.stream(userRepository.findAll().spliterator(), false);
+    public Flux<UserEntity> queryUser() {
+        return Mono.fromCallable(userRepository::findAll)
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMapIterable(Function.identity());
     }
 }

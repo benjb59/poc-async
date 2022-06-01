@@ -1,11 +1,11 @@
 package fr.insee.pocasync.producer.service;
 
 import fr.insee.pocasync.producer.domain.UserEntity;
-
-import java.util.stream.Stream;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public interface UserService {
-    String createUser(String username);
+    Mono<String> createUser(String username);
 
-    Stream<UserEntity> queryUser();
+    Flux<UserEntity> queryUser();
 }
