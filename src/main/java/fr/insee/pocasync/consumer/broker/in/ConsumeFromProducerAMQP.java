@@ -18,14 +18,14 @@ import java.util.concurrent.TimeUnit;
 public class ConsumeFromProducerAMQP {
 
     @SneakyThrows
-    @RabbitListener(queues = ConfigurationAMQP.MESSAGE_QUEUE_REQUEST)
+    @RabbitListener(queues = ConfigurationAMQP.MESSAGE_QUEUE_REQUEST, concurrency = "100")
     public String receiveMessage(UserDTO userDTO) {
 
         log.info("######################################");
         log.info("RABBITMQ - CONSUMER : received message");
         log.info("######################################");
 
-        TimeUnit.SECONDS.sleep(10);
+        TimeUnit.SECONDS.sleep(1);
 
         return "Hello world, " + userDTO.getUsername();
     }

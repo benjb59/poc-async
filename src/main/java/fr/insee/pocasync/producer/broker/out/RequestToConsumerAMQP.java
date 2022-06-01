@@ -5,6 +5,8 @@ import fr.insee.pocasync.producer.domain.UserDTO;
 import fr.insee.pocasync.producer.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.MessagePostProcessor;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import javax.transaction.Transactional;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
@@ -51,7 +54,8 @@ public class RequestToConsumerAMQP {
                 userRepository.save(userDTO);
             }
 
-        } else {
+        }
+        if ("future".equals(mode)) {
             asyncRabbitTemplate.setReceiveTimeout(60000);
 
             ListenableFuture<String> listenableFuture =
@@ -70,7 +74,23 @@ public class RequestToConsumerAMQP {
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Cannot get response.", e);
             }
+        } else {
+            UUID correlationId = UUID.randomUUID();
+            userDTO.setCorrelationId(correlationId);
+            userRepository.save(userDTO);
+
+            MessagePostProcessor messagePostProcessor = message -> {
+                MessageProperties messageProperties = message.getMessageProperties();
+                messageProperties.setReplyTo(ConfigurationAMQP.MESSAGE_QUEUE_RESPONSE);
+                messageProperties.setCorrelationId(correlationId.toString());
+                return message;
+            };
+
+            rabbitTemplate.convertAndSend(
+                    ConfigurationAMQP.EXCHANGE_NAME,
+                    ConfigurationAMQP.ROUTING_KEY,
+                    userDTO,
+                    messagePostProcessor);
         }
-        ;
     }
 }

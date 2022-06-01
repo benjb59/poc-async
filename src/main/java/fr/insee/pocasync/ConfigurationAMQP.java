@@ -19,11 +19,17 @@ public class ConfigurationAMQP {
 
     public static final String EXCHANGE_NAME = "spring-boot-exchange";
     public static final String MESSAGE_QUEUE_REQUEST = "message-queue-request";
+    public static final String MESSAGE_QUEUE_RESPONSE = "message-queue-response";
     public static final String ROUTING_KEY = "foo.bar.#";
 
     @Bean
     Queue queue() {
         return new Queue(MESSAGE_QUEUE_REQUEST, false);
+    }
+
+    @Bean
+    Queue queueResponse() {
+        return new Queue(MESSAGE_QUEUE_RESPONSE, false);
     }
 
     @Bean

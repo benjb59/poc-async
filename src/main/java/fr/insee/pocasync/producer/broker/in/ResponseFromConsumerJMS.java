@@ -33,9 +33,12 @@ public class ResponseFromConsumerJMS {
             log.info("ACTIVEMQ - PRODUCER : Ok from consumer for correlation_id <" + jmsCorrelationId + ">");
             log.info("##################################");
 
-            UserDTO user = userRepository.findByCorrelationId(UUID.fromString(jmsCorrelationId));
-            user.setRegistered(true);
-            userRepository.save(user);
+            userRepository.findByCorrelationId(UUID.fromString(jmsCorrelationId)).ifPresent(
+                    userDTO -> {
+                        userDTO.setRegistered(true);
+                        userRepository.save(userDTO);
+                    }
+            );
         }
     }
 }
