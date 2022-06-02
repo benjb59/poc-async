@@ -1,11 +1,13 @@
 package fr.insee.pocasync.producer.service;
 
 import fr.insee.pocasync.producer.domain.UserDTO;
-
-import java.util.stream.Stream;
+import lombok.NonNull;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public interface UserService {
-    void createUser(String username);
+    Mono<String> createUser(@NonNull String username);
 
-    Stream<UserDTO> queryUser();
+    Flux<UserDTO> queryUser();
+
 }

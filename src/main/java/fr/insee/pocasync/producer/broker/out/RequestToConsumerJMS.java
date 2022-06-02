@@ -2,6 +2,7 @@ package fr.insee.pocasync.producer.broker.out;
 
 import fr.insee.pocasync.ConfigurationJMS;
 import fr.insee.pocasync.producer.domain.UserDTO;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -19,8 +20,8 @@ public class RequestToConsumerJMS {
     private final JmsTemplate jmsTemplate;
 
     @Transactional
-    public void publish(UserDTO userDTO) {
 
+    public void publish(@NonNull UserDTO userDTO) {
         log.info("##################################");
         log.info("ACTIVEMQ - PRODUCER : send message with correlation_id: <" + userDTO.getCorrelationId() + ">");
         log.info("##################################");

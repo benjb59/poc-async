@@ -4,14 +4,17 @@ import fr.insee.pocasync.producer.broker.in.ResponseFromConsumerJMS;
 import fr.insee.pocasync.producer.broker.out.RequestToConsumerJMS;
 import fr.insee.pocasync.producer.domain.UserDTO;
 import fr.insee.pocasync.producer.repository.UserRepository;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.UUID;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.function.Function;
 
 import static fr.insee.pocasync.ConfigurationJMS.MESSAGE_QUEUE_RESPONSE;
 
@@ -27,25 +30,19 @@ public class UserServiceImplJMS implements UserService {
     private final ResponseFromConsumerJMS responseReceiverFromConsumer;
 
     @Override
-    public void createUser(String username) {
-
-        UUID correlationId = UUID.randomUUID();
-
-        UserDTO userDTO = UserDTO
-                .builder()
-                .username(username)
-                .correlationId(correlationId)
-                .build();
-
-        userRepository.save(userDTO);
-
-        userProducer.publish(userDTO);
-
-        responseReceiverFromConsumer.receiveResponse(MESSAGE_QUEUE_RESPONSE, correlationId.toString());
+    public Mono<String> createUser(@NonNull String username) {
+        return Mono.fromCallable(() ->{
+            var userDTO = userRepository.save(new UserDTO(UUID.randomUUID(), username));
+            userProducer.publish(userDTO);
+            responseReceiverFromConsumer.receiveResponse(MESSAGE_QUEUE_RESPONSE, userDTO.getCorrelationId().toString());
+            return (String)null;
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     @Override
-    public Stream<UserDTO> queryUser() {
-        return StreamSupport.stream(userRepository.findAll().spliterator(), false);
+    public Flux<UserDTO> queryUser() {
+        return Mono.fromCallable(userRepository::findAll)
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMapIterable(Function.identity());
     }
 }

@@ -7,8 +7,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Slf4j
@@ -21,7 +22,7 @@ public class UserServiceImplAMQP implements UserService {
     private final RequestToConsumerAMQP userProducer;
 
     @Override
-    public void createUser(String username) {
+    public Mono<String> createUser(String username) {
 
         UserDTO userDTO = UserDTO
                 .builder()
@@ -31,10 +32,11 @@ public class UserServiceImplAMQP implements UserService {
         userRepository.save(userDTO);
 
         userProducer.publish(userDTO);
+        return Mono.empty();
     }
 
     @Override
-    public Stream<UserDTO> queryUser() {
-        return StreamSupport.stream(userRepository.findAll().spliterator(), false);
+    public Flux<UserDTO> queryUser() {
+        return userRepository.findAll();
     }
 }
