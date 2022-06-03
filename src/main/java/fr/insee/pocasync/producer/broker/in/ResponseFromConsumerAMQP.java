@@ -33,10 +33,6 @@ public class ResponseFromConsumerAMQP {
         log.info("##################################");
 
         userRepository.findByCorrelationId(UUID.fromString(correlationId)).subscribe(
-                userDTO -> {
-                    userDTO.withRegistered(true);
-                    userRepository.save(userDTO);
-                }
-        );
+                userDTO -> userRepository.setRegisteredForUserId(userDTO.userId(), true).subscribe());
     }
 }

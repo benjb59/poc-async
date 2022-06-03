@@ -32,7 +32,7 @@ public class ResponseFromConsumerJMS {
             log.info("##################################");
 
             userRepository.findByCorrelationId(UUID.fromString(jmsCorrelationId)).subscribe(
-                    userDTO -> userRepository.save(userDTO.withRegistered(true))
+                    userDTO -> userRepository.setRegisteredForUserId(userDTO.userId(), true).subscribe(n->log.info("Modifying : "+n))
             );
         }
     }

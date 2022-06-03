@@ -51,8 +51,7 @@ public class RequestToConsumerAMQP {
 
 
             if (response != null) {
-                userDTO=userDTO.withRegistered(true);
-                userRepository.save(userDTO);
+                userRepository.setRegisteredForUserId(userDTO.userId(), true).subscribe();
             }
 
         }
@@ -70,15 +69,13 @@ public class RequestToConsumerAMQP {
             try {
                 String response = listenableFuture.get();
                 log.info("Message received: {}", response);
-                userDTO=userDTO.withRegistered(true);
-                userRepository.save(userDTO);
+                userRepository.setRegisteredForUserId(userDTO.userId(), true).subscribe();
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Cannot get response.", e);
             }
         } else {
             UUID correlationId = UUID.randomUUID();
-            userDTO=userDTO.withCorrelationId(correlationId);
-            userRepository.save(userDTO);
+            userRepository.setCorrelationIdForUserId(userDTO.userId(), correlationId).subscribe();
 
             MessagePostProcessor messagePostProcessor = message -> {
                 MessageProperties messageProperties = message.getMessageProperties();
