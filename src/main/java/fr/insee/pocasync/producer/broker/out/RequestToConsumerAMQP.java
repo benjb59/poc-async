@@ -13,9 +13,9 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.concurrent.ListenableFuture;
 
-import javax.transaction.Transactional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -51,7 +51,7 @@ public class RequestToConsumerAMQP {
 
 
             if (response != null) {
-                userDTO.setRegistered(true);
+                userDTO=userDTO.withRegistered(true);
                 userRepository.save(userDTO);
             }
 
@@ -70,14 +70,14 @@ public class RequestToConsumerAMQP {
             try {
                 String response = listenableFuture.get();
                 log.info("Message received: {}", response);
-                userDTO.setRegistered(true);
+                userDTO=userDTO.withRegistered(true);
                 userRepository.save(userDTO);
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Cannot get response.", e);
             }
         } else {
             UUID correlationId = UUID.randomUUID();
-            userDTO.setCorrelationId(correlationId);
+            userDTO=userDTO.withCorrelationId(correlationId);
             userRepository.save(userDTO);
 
             MessagePostProcessor messagePostProcessor = message -> {

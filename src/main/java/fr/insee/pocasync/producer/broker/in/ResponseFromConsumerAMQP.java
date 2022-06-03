@@ -9,8 +9,8 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.UUID;
 
 @Slf4j
@@ -32,9 +32,9 @@ public class ResponseFromConsumerAMQP {
         log.info("ACTIVEMQ - PRODUCER : Ok from consumer for correlation_id <" + correlationId + ">");
         log.info("##################################");
 
-        userRepository.findByCorrelationId(UUID.fromString(correlationId)).ifPresent(
+        userRepository.findByCorrelationId(UUID.fromString(correlationId)).subscribe(
                 userDTO -> {
-                    userDTO.setRegistered(true);
+                    userDTO.withRegistered(true);
                     userRepository.save(userDTO);
                 }
         );
