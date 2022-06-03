@@ -27,6 +27,6 @@ public class ConsumeFromProducerAMQP {
 
         TimeUnit.SECONDS.sleep(1);
 
-        return "Hello world, " + userDTO.getUsername();
+        return "Hello world, " + userDTO.username();
     }
 }

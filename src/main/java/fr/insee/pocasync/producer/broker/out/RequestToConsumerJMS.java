@@ -8,8 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
-
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @ConditionalOnProperty(prefix = "notification", name = "service", havingValue = "jms")
@@ -19,15 +18,13 @@ public class RequestToConsumerJMS {
 
     private final JmsTemplate jmsTemplate;
 
-    @Transactional
-
     public void publish(@NonNull UserDTO userDTO) {
         log.info("##################################");
-        log.info("ACTIVEMQ - PRODUCER : send message with correlation_id: <" + userDTO.getCorrelationId() + ">");
+        log.info("ACTIVEMQ - PRODUCER : send message with correlation_id: <" + userDTO.correlationId() + ">");
         log.info("##################################");
 
-        jmsTemplate.convertAndSend(ConfigurationJMS.MESSAGE_QUEUE_REQUEST, "JMS received User : " + userDTO.getUsername(), m -> {
-            m.setJMSCorrelationID(userDTO.getCorrelationId().toString());
+        jmsTemplate.convertAndSend(ConfigurationJMS.MESSAGE_QUEUE_REQUEST, "JMS received User : " + userDTO.username(), m -> {
+            m.setJMSCorrelationID(userDTO.correlationId().toString());
             return m;
         });
     }
