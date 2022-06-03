@@ -3,14 +3,11 @@ package fr.insee.pocasync.producer.service;
 import fr.insee.pocasync.producer.broker.out.RequestToConsumerAMQP;
 import fr.insee.pocasync.producer.domain.UserDTO;
 import fr.insee.pocasync.producer.repository.UserRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import java.util.stream.StreamSupport;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -18,25 +15,13 @@ import java.util.stream.StreamSupport;
 @Service
 public class UserServiceImplAMQP implements UserService {
 
+    @Getter
     private final UserRepository userRepository;
     private final RequestToConsumerAMQP userProducer;
 
     @Override
-    public Mono<String> createUser(String username) {
-
-        UserDTO userDTO = UserDTO
-                .builder()
-                .username(username)
-                .build();
-
-        userRepository.save(userDTO);
-
+    public void publishAndReceive(UserDTO userDTO) {
         userProducer.publish(userDTO);
-        return Mono.empty();
     }
 
-    @Override
-    public Flux<UserDTO> queryUser() {
-        return userRepository.findAll();
-    }
 }
