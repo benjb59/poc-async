@@ -19,7 +19,7 @@ public class UserController {
 
     @GetMapping(path = "/create")
     public Mono<String> createUser(@RequestParam String username) {
-        return userService.createUser(username);
+        return userService.createUser(username).map(UserDTO::toPrintableString);
     }
 
     @GetMapping(path = "/all")

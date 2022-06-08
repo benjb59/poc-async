@@ -5,17 +5,17 @@ import fr.insee.pocasync.producer.repository.UserRepository;
 import lombok.NonNull;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.util.UUID;
+import java.util.logging.Level;
 
 public interface UserService {
-    default Mono<String> createUser(@NonNull String username) {
-        return Mono.fromCallable(() ->{
-            var userDTO = getUserRepository().save(new UserDTO(null,UUID.randomUUID(), username,false)).block();
-            publishAndReceive(userDTO);
-            return (String)null;
-        }).subscribeOn(Schedulers.boundedElastic());
+    default Mono<UserDTO> createUser(@NonNull String username) {
+        final UserDTO[] wrapperUserDTO=new UserDTO[1];
+        return getUserRepository().save(new UserDTO(null,UUID.randomUUID(), username,false))
+                .doOnSuccess(u->wrapperUserDTO[0]=u)
+                .log("reactor.", Level.INFO)
+                .doAfterTerminate(()->publishAndReceive(wrapperUserDTO[0]));
     }
 
     void publishAndReceive(UserDTO userDTO);
